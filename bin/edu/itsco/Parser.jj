@@ -1,0 +1,69 @@
+/**
+ * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
+ */options{  static = true;}PARSER_BEGIN(Parser)package edu.itsco;
+
+public class Parser{  public static void main(String args []) throws ParseException  {    Parser parser = new Parser(System.in);     }}PARSER_END(Parser)SKIP :{  " "| "\r"| "\t"| "\n"}
+
+TOKEN: {
+     < MAIN: "main" >
+   | < END: "end" >
+
+ | < INT: "int" >
+ | < STRING: "string" >
+ | < FLOAT: "float" >
+
+| < VAR: "var" >
+
+| < WRITE: "write" >
+| < PRINT: "print" >
+
+| < IF: "if" >
+| < ELSE: "else" >
+| < THEN: "then" >
+
+| < SELECT: "select" >
+| < CASE: "case" >
+| < DEFECT: "defect" >
+
+| < FOR: "for" >
+| < UNTIL: "until" >
+| < NEXT: "next" >
+
+| < DO_WHILE:"do_while" >
+| < WHILE:"while" >
+}
+
+TOKEN:{
+  < PLUS: "+" >
+| < SUBTRACTION: "-" >
+| < MULTIPLICATION: "*" >
+| < DIVISION: "/" >
+| < MODULE: "%" >
+
+| < HIGHER: ">" >
+| < LESS: "<" >
+| < SAME: "=" >
+
+| < AND: "&&" >
+| < OR: "||" >
+| < NOT: "!" >
+
+| < OP: "(" >
+| < CP: ")" >
+
+| < OPK: "{" >
+| < CLK: "}" >
+}
+
+
+TOKEN: {
+  <#lyrics: ["a"-"z", "A"-"Z"] >
+ |<#digits: ["0"-"9"] >
+
+| < ID: (< lyrics >| "_") (< lyrics > |< digits >|"_" )* >
+
+| < VALUE_INT: (< digits >)* >
+| < VALUE_FLOAT: (< digits >)* "." (< digits >)+ >
+| < VALUE_STRING: "\"" (~["\""])* "\"" >
+
+}

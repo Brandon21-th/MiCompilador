@@ -2,7 +2,10 @@
  * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
  */options{  static = true;}PARSER_BEGIN(Parser)package edu.itsco;
 
-public class Parser{  public static void main(String args []) throws ParseException  {    Parser parser = new Parser(System.in);     }}PARSER_END(Parser)SKIP :{  " "| "\r"| "\t"| "\n"}
+public class Parser{  public static void main(String args []) throws ParseException  {    Parser parser = new Parser(System.in);    System.out.println("Bienvenidos al COMPILADOR de Brandito");
+    System.out.println("-------------------------------------");
+    parser.principal();
+    System.out.println("Vas bien Brandito compilo exitosamente");  }}PARSER_END(Parser)SKIP :{  " "| "\r"| "\t"| "\n"}
 
 TOKEN: {
      < MAIN: "main" >
@@ -16,6 +19,7 @@ TOKEN: {
 
 | < WRITE: "write" >
 | < PRINT: "print" >
+| < READ: "read" >
 
 | < IF: "if" >
 | < ELSE: "else" >
@@ -24,12 +28,13 @@ TOKEN: {
 | < SELECT: "select" >
 | < CASE: "case" >
 | < DEFECT: "defect" >
+| < BREAK:"break" >
 
 | < FOR: "for" >
 | < UNTIL: "until" >
 | < NEXT: "next" >
 
-| < DO_WHILE:"do_while" >
+| < DOWHILE:"dowhile" >
 | < WHILE:"while" >
 }
 
@@ -53,6 +58,8 @@ TOKEN:{
 
 | < OPK: "{" >
 | < CLK: "}" >
+
+| < TP: ":" >
 }
 
 
@@ -66,4 +73,108 @@ TOKEN: {
 | < VALUE_FLOAT: (< digits >)* "." (< digits >)+ >
 | < VALUE_STRING: "\"" (~["\""])* "\"" >
 
+}
+
+void principal (): { }
+{
+  < MAIN > <ID >
+  (
+    sentences()  )+
+  < END >
+}
+void sentences (): { }
+{
+  declareVariable()
+| grammarwrite()
+| grammarread()
+| grammarAssignment()
+| grammarIF()
+| grammarSelect()
+| grammarFor()
+| grammarWhile()
+| grammarDowhile()
+}
+void declareVariable (): { }
+{
+  < VAR > < ID > typeDATA() [< SAME > value() ]
+}
+void typeDATA (): { }
+{
+  < INT > | < FLOAT > | < STRING >
+}
+void value (): { }
+{
+  < VALUE_INT > | < VALUE_FLOAT > | < VALUE_STRING > | < ID >
+}
+void grammarwrite (): { }
+{
+  < WRITE > < OP > value() ( < PLUS > value())* < CP >  
+}
+void grammarread (): { }
+{
+  < READ > < OP > < ID > < CP >
+}
+void grammarAssignment (): { }
+{
+  < ID > < SAME > operationSimple()
+}
+void operationSimple (): { }
+{
+  (value() | operationParentesis())
+  (operatingArithmetic() (value() | operationParentesis()) )*
+}
+void operationParentesis (): { }
+{
+  < OP > operationSimple() < CP >
+}
+void operatingArithmetic (): { }
+{
+  < PLUS > | < SUBTRACTION > | < MULTIPLICATION > | <  DIVISION > | < MODULE >
+}
+void grammarIF (): { }
+{
+   < IF > < OP > condition() < CP > < THEN > < OPK >
+     ( sentences() )+ < CLK >
+     [< ELSE > < OPK > ( sentences() )+ < CLK > ]   < END ><IF > 
+}
+void condition (): { }
+{
+  conditionSimple() (opLogical() conditionSimple())*
+}
+void conditionSimple (): { }
+{
+  value() opRelational() value()
+}
+void opLogical (): { }
+{
+  < AND > | < OR >
+}
+void opRelational (): { }
+{
+  < HIGHER > [< SAME >] | < LESS > [< SAME >]|< SAME >< SAME >| < NOT > [< SAME >]
+}
+void grammarSelect (): { }
+{
+  < SELECT > < OP > < ID > < CP >
+  (< CASE > < VALUE_INT > < TP > sentences() < BREAK >)+
+  [< DEFECT > < TP > sentences() < BREAK >]
+  < END > < SELECT >
+}
+void grammarFor (): { }
+{
+  < FOR > < OP > < ID > < SAME > < VALUE_INT > < UNTIL > < SAME > < VALUE_INT > < CP >
+  < OPK > (sentences())+ < CLK >
+  < NEXT > 
+}
+void grammarWhile (): { }
+{
+  < WHILE > < OP > condition() < CP >
+  < OPK > (sentences())+ < CLK >
+  < END > < WHILE >  
+}
+void grammarDowhile (): { }
+{
+  < DOWHILE >
+  < OPK >(sentences())+
+  < END >< WHILE > < OP > condition() < CP >< CLK >
 }

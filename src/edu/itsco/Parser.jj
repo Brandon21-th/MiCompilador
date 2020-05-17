@@ -1,11 +1,30 @@
 /**
  * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
  */options{  static = true;}PARSER_BEGIN(Parser)package edu.itsco;
-
-public class Parser{  public static void main(String args []) throws ParseException  {    Parser parser = new Parser(System.in);    System.out.println("Bienvenidos al COMPILADOR de Brandito");
+import java.util.ArrayList;
+public class Parser{
+  private static ArrayList<Variable> listaVariables;
+    public static void main(String args []) throws ParseException, SemanticException  {
+    listaVariables = new ArrayList<Variable>();    Parser parser = new Parser(System.in);    System.out.println("Bienvenidos al COMPILADOR de Brandito");
     System.out.println("-------------------------------------");
     parser.principal();
-    System.out.println("Vas bien Brandito compilo exitosamente");  }}PARSER_END(Parser)SKIP :{  " "| "\r"| "\t"| "\n"}
+    System.out.println("Vas bien Brandito compilo exitosamente");  }
+
+  private static void addVariable(Variable variable) throws SemanticException{
+    if(listaVariables.contains(variable)) {
+      throw new SemanticException(variable, SemanticException.VARIABLE_DUPLICATED);
+    }else {
+      listaVariables.add(variable);
+      
+      }
+  }
+  private static void existeVariable(String id) throws SemanticException {
+    Variable v= new Variable();
+    v.setId(id);
+    if(!listaVariables.contains(v)) {
+      throw new SemanticException(v, SemanticException.VARIABLE_NO_DEFINED);
+    }
+     }}PARSER_END(Parser)SKIP :{  " "| "\r"| "\t"| "\n"}
 
 TOKEN: {
      < MAIN: "main" >
@@ -75,14 +94,14 @@ TOKEN: {
 
 }
 
-void principal (): { }
+void principal () throws SemanticException : { }
 {
   < MAIN > <ID >
   (
     sentences()  )+
   < END >
 }
-void sentences (): { }
+void sentences () throws SemanticException : { }
 {
   declareVariable()
 | grammarwrite()
@@ -94,36 +113,57 @@ void sentences (): { }
 | grammarWhile()
 | grammarDowhile()
 }
-void declareVariable (): { }
+void declareVariable () throws SemanticException : {
+Token tipoDato;
+Token id;
+boolean inicializada = false;
+ }
 {
-  < VAR > < ID > typeDATA() [< SAME > value() ]
+  < VAR > id = < ID > tipoDato = typeDATA()
+  [< SAME > value() { inicializada = true;}]
+  {
+    Variable var = new Variable(id.image, tipoDato.image);
+    var.setEstainicializada(inicializada);
+    addVariable(var);
+  }
 }
-void typeDATA (): { }
+Token typeDATA (): {
+Token tipoDato;
+}
 {
-  < INT > | < FLOAT > | < STRING >
+  (
+    tipoDato = < INT > |tipoDato = < FLOAT > |tipoDato = < STRING >
+  )
+  {
+    return tipoDato;
+  }
 }
-void value (): { }
+void value () throws SemanticException : {
+  token id; }
 {
-  < VALUE_INT > | < VALUE_FLOAT > | < VALUE_STRING > | < ID >
+  < VALUE_INT > | < VALUE_FLOAT > | < VALUE_STRING > | id = < ID >
+  {existeVariable(id.image); }
 }
-void grammarwrite (): { }
+void grammarwrite () throws SemanticException: { }
 {
   < WRITE > < OP > value() ( < PLUS > value())* < CP >  
 }
-void grammarread (): { }
+void grammarread () throws SemanticException : { token id;}
 {
-  < READ > < OP > < ID > < CP >
+  < READ > < OP > id= < ID > < CP >
+  {existeVariable(id.image); }
 }
-void grammarAssignment (): { }
+void grammarAssignment () throws SemanticException : { token id;}
 {
-  < ID > < SAME > operationSimple()
+ id = < ID > < SAME > operationSimple()
+ {existeVariable(id.image); }
 }
-void operationSimple (): { }
+void operationSimple () throws SemanticException : { }
 {
   (value() | operationParentesis())
   (operatingArithmetic() (value() | operationParentesis()) )*
 }
-void operationParentesis (): { }
+void operationParentesis () throws SemanticException : { }
 {
   < OP > operationSimple() < CP >
 }
@@ -131,17 +171,17 @@ void operatingArithmetic (): { }
 {
   < PLUS > | < SUBTRACTION > | < MULTIPLICATION > | <  DIVISION > | < MODULE >
 }
-void grammarIF (): { }
+void grammarIF () throws SemanticException: { }
 {
    < IF > < OP > condition() < CP > < THEN > < OPK >
      ( sentences() )+ < CLK >
      [< ELSE > < OPK > ( sentences() )+ < CLK > ]   < END ><IF > 
 }
-void condition (): { }
+void condition () throws SemanticException : { }
 {
   conditionSimple() (opLogical() conditionSimple())*
 }
-void conditionSimple (): { }
+void conditionSimple ()throws SemanticException : { }
 {
   value() opRelational() value()
 }
@@ -153,26 +193,26 @@ void opRelational (): { }
 {
   < HIGHER > [< SAME >] | < LESS > [< SAME >]|< SAME >< SAME >| < NOT > [< SAME >]
 }
-void grammarSelect (): { }
+void grammarSelect () throws SemanticException : { }
 {
   < SELECT > < OP > < ID > < CP >
   (< CASE > < VALUE_INT > < TP > sentences() < BREAK >)+
   [< DEFECT > < TP > sentences() < BREAK >]
   < END > < SELECT >
 }
-void grammarFor (): { }
+void grammarFor () throws SemanticException : { }
 {
   < FOR > < OP > < ID > < SAME > < VALUE_INT > < UNTIL > < SAME > < VALUE_INT > < CP >
   < OPK > (sentences())+ < CLK >
   < NEXT > 
 }
-void grammarWhile (): { }
+void grammarWhile () throws SemanticException : { }
 {
   < WHILE > < OP > condition() < CP >
   < OPK > (sentences())+ < CLK >
   < END > < WHILE >  
 }
-void grammarDowhile (): { }
+void grammarDowhile () throws SemanticException : { }
 {
   < DOWHILE >
   < OPK >(sentences())+
